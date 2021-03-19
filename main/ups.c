@@ -74,6 +74,9 @@
 #define BATTERY_DISCONNECT             0
 #define BATTERY_CONNECT                1
 
+#define FAN_LOW                        0
+#define FAN_HIGH                       1
+
 /* v_in good voltage in mV */
 #define V_IN_GOOD                      15000
 
@@ -378,7 +381,7 @@ static void main_task(void *arg)
     nvs_get_u32(nvs_get_handle(), NVS_POWER_OFF, &power_off);
     nvs_get_u32(nvs_get_handle(), NVS_BATTERY_DISCHARGED, &bat_discharged);
 
-    /* Wait for voltages to be stable */
+    /* Wait 2 seconds for voltages to be stable and display banner */
     vTaskDelay(2000 / portTICK_RATE_MS);
 
     ssd1306_Fill(Black);
@@ -487,8 +490,8 @@ static void main_task(void *arg)
             {
                 if (v_bat > V_BAT_FAN_LOW && i_out < I_OUT_FAN_LOW)
                 {
-                    /* Set fan to hi speed */
-                    gpio_set_level(GPIO_FAN_CONTROL, 0);
+                    /* Set fan to low speed */
+                    gpio_set_level(GPIO_FAN_CONTROL, FAN_LOW);
                     fan_tick_count = xTaskGetTickCount();
                     fan_high = false;
                 }
@@ -497,8 +500,8 @@ static void main_task(void *arg)
             {
                 if (v_bat < V_BAT_FAN_LOW || i_out > I_OUT_FAN_LOW)
                 {
-                    /* Set fan to low speed */
-                    gpio_set_level(GPIO_FAN_CONTROL, 1);
+                    /* Set fan to high speed */
+                    gpio_set_level(GPIO_FAN_CONTROL, FAN_HIGH);
                     fan_tick_count = xTaskGetTickCount();
                     fan_high = true;
                 }
@@ -584,15 +587,15 @@ void app_main()
     char wifi_pass[24];
 
     /* Init drivers */
-    if (uart_init() != ESP_OK         ||
-        gpio_init() != ESP_OK         ||
-        nvs_init() != ESP_OK          ||
+    if (uart_init() != ESP_OK   ||
+        gpio_init() != ESP_OK   ||
+        nvs_init() != ESP_OK    ||
         adc_init() != ESP_OK) {
         FATAL_ERROR("Could not init drivers!");
     }
 
-    /* Turn off fan */
-    gpio_set_level(GPIO_FAN_CONTROL, 0);
+    /* Set fan to low speed */
+    gpio_set_level(GPIO_FAN_CONTROL, FAN_LOW);
     
     /* Start with battery disconnected */
     gpio_set_level(GPIO_BATTERY_CONTROL, BATTERY_DISCONNECT);
