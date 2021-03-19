@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Adrian Bradianu (github.com/abradianu)
+ * Copyright (c) 2021 Adrian Bradianu (github.com/abradianu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

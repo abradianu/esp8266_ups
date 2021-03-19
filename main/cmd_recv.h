@@ -1,7 +1,7 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Adrian Bradianu (github.com/abradianu)
+ * Copyright (c) 2019-2021 Adrian Bradianu (github.com/abradianu)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,15 +78,18 @@ typedef enum {
      * 
      * Action: publish stats info, JSON format:
      * {
-     *        "cmd":  2,
-     *        "id":   "84f3eb23bcd5",
-     *        "mac":  "010203040506"
-     *        "baseline":0xf949
-     *        "time": 1549735713,
-     *        "Vout": 1210,
-     *        "Iout": 520,
-     *        "Vbat": 13450,
-     *        "Vin":  17650
+     *         "cmd":  3,
+     *         "id":   "ups",
+     *         "time": 1616187147,
+     *         "v_out":        12106,
+     *         "i_out":        840,
+     *         "v_bat":        13492,
+     *         "v_in ":        17575,
+     *         "p_off":        62,
+     *         "fan_high":     false,
+     *         "adc_err":      0,
+     *         "bat_discharged":       3,
+     *         "bat_connected":        true
      * }
      */
 
