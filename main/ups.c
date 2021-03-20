@@ -117,8 +117,8 @@
 #define FATAL_ERROR(fmt, args...)                     \
 do {                                                  \
     ESP_LOGE(TAG, fmt,## args);                       \
-    ESP_LOGE(TAG, "Rebooting in 5 seconds");          \
-    vTaskDelay(5000 / portTICK_RATE_MS);              \
+    ESP_LOGE(TAG, "Rebooting in 2 seconds");          \
+    vTaskDelay(2000 / portTICK_RATE_MS);              \
     esp_restart();                                    \
 } while (0)
 
@@ -128,7 +128,7 @@ typedef enum {
     WIFI_STA_CONNECTED,
 } wifi_state_t;
 
-static const char *TAG = "APP";
+static const char *TAG = "UPS";
 static wifi_state_t wifi_state;
 static i2c_dev_t adc_dev;
 static ups_data_t ups_data;
