@@ -595,6 +595,7 @@ void app_main()
     /* Init drivers */
     if (uart_init() != ESP_OK   ||
         gpio_init() != ESP_OK   ||
+        i2cdev_init() != ESP_OK ||
         nvs_init() != ESP_OK    ||
         adc_init() != ESP_OK) {
         FATAL_ERROR("Could not init drivers!");

@@ -23,10 +23,6 @@ typedef struct {
 
 static i2c_port_state_t states[I2C_NUM_MAX];
 
-#if 1
-#define SEMAPHORE_TAKE(port)
-#define SEMAPHORE_GIVE(port) 
-#else
 #define SEMAPHORE_TAKE(port) do { \
         if (!xSemaphoreTake(states[port].lock, pdMS_TO_TICKS(CONFIG_I2CDEV_TIMEOUT))) \
         { \
@@ -42,7 +38,7 @@ static i2c_port_state_t states[I2C_NUM_MAX];
             return ESP_FAIL; \
         } \
         } while (0)
-#endif
+
 esp_err_t i2cdev_init()
 {
     memset(states, 0, sizeof(states));
