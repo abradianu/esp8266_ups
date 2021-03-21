@@ -132,6 +132,7 @@ static const char *TAG = "UPS";
 static wifi_state_t wifi_state;
 static i2c_dev_t adc_dev;
 static ups_data_t ups_data;
+static SemaphoreHandle_t ups_mutex = NULL;
 
 static void sntp_start(void)
 {
@@ -298,14 +299,15 @@ static esp_err_t adc_read(int chan, int * voltage)
         return ESP_FAIL;
     }
 
-    /* Wait for conversion */
+    /* Wait for conversion to finish, for 64 SPS conversion time is ~15ms */
+    vTaskDelay(20 / portTICK_RATE_MS);
     do
     {
-        vTaskDelay(20 / portTICK_RATE_MS);
         ads111x_is_busy(&adc_dev, &not_busy);
         if (not_busy)
             break;
         retries++;
+        vTaskDelay(1);
     } while (retries < ADC_BUSY_RETRIES);
 
     if (retries == ADC_BUSY_RETRIES)
@@ -508,6 +510,7 @@ static void main_task(void *arg)
             }
         }
 
+        xSemaphoreTake(ups_mutex, portMAX_DELAY);
         ups_data.v_out = v_out;
         ups_data.i_out = i_out;
         ups_data.v_bat = v_bat;
@@ -517,6 +520,7 @@ static void main_task(void *arg)
         ups_data.bat_connected = bat_connected;
         ups_data.fan_high = fan_high;
         ups_data.adc_errors = adc_errors;
+        xSemaphoreGive(ups_mutex);
 
         /* Display first text row, Vout and Iout */
         v_out = v_out + 50;
@@ -574,7 +578,9 @@ static void main_task(void *arg)
 
 esp_err_t ups_get_data(ups_data_t *data)
 {
+    xSemaphoreTake(ups_mutex, portMAX_DELAY);
     memcpy(data, &ups_data, sizeof(ups_data_t));
+    xSemaphoreGive(ups_mutex);
     
     return ESP_OK;
 }
@@ -638,6 +644,12 @@ void app_main()
     setenv("TZ", TIMEZONE, 1);
     tzset();
     
+    ups_mutex = xSemaphoreCreateMutex();
+    if (ups_mutex == NULL)
+    {
+        FATAL_ERROR("Could not create mutex!");
+    }
+
     if (xTaskCreate(main_task, "main_task", MAIN_TASK_STACK_SIZE, NULL,
         MAIN_TASK_PRIORITY, NULL) != pdPASS) {
         FATAL_ERROR("Main task could not be created!");
