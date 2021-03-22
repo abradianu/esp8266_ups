@@ -510,6 +510,7 @@ static void main_task(void *arg)
             }
         }
 
+        /* Set new data */
         xSemaphoreTake(ups_mutex, portMAX_DELAY);
         ups_data.v_out = v_out;
         ups_data.i_out = i_out;
@@ -555,7 +556,6 @@ static void main_task(void *arg)
         ssd1306_WriteString(text, Font_11x18, White);
 
         /* Display third text row, Poff status */
-        v_in = v_in + 50;
         if (!power_is_on && blink_level == 0)
         {
             /* Power is off, blink text */
@@ -570,7 +570,6 @@ static void main_task(void *arg)
         ssd1306_WriteString(text, Font_11x18, White);
 
         ssd1306_UpdateScreen();
-
 
         vTaskDelay(MAIN_TASK_LOOP_DELAY / portTICK_RATE_MS);
     }
@@ -603,13 +602,19 @@ void app_main()
 
     /* Set fan to low speed */
     gpio_set_level(GPIO_FAN_CONTROL, FAN_LOW);
-    
+
     /* Start with battery disconnected */
     gpio_set_level(GPIO_BATTERY_CONTROL, BATTERY_DISCONNECT);
-    
+
     ESP_LOGI(TAG, "FW VERSION: %s", FW_VERSION);
     ESP_LOGI(TAG, "BASE MAC  : %s", nvs_get_base_mac());
-    
+
+    ups_mutex = xSemaphoreCreateMutex();
+    if (ups_mutex == NULL)
+    {
+        FATAL_ERROR("Could not create mutex!");
+    }
+
     nvs = nvs_get_handle();
 
     ssd1306_Init();
@@ -644,12 +649,6 @@ void app_main()
     /* Set timezone */
     setenv("TZ", TIMEZONE, 1);
     tzset();
-    
-    ups_mutex = xSemaphoreCreateMutex();
-    if (ups_mutex == NULL)
-    {
-        FATAL_ERROR("Could not create mutex!");
-    }
 
     if (xTaskCreate(main_task, "main_task", MAIN_TASK_STACK_SIZE, NULL,
         MAIN_TASK_PRIORITY, NULL) != pdPASS) {

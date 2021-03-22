@@ -382,18 +382,24 @@ static esp_err_t cmd_set_mqtt_broker_ip(cJSON *root)
 }
 
 /*
- * Sensors info JSON format:
+ * UPS info JSON format:
  * {
- *        "cmd":  3,
- *        "id":   "84f3eb23bcd5",
- *        "time": 1550306285,
- *        "co2":  123
- *        "temp": 2345,
- *        "humidity":     5123,
+ *         "cmd":  3,
+ *         "id":   "ups",
+ *         "time": 1616187147,
+ *         "v_out":        12106,
+ *         "i_out":        840,
+ *         "v_bat":        13492,
+ *         "v_in ":        17575,
+ *         "p_off":        62,
+ *         "fan_high":     false,
+ *         "adc_err":      0,
+ *         "bat_discharged":       3,
+ *         "bat_connected":        true
  * }
  */
 
-esp_err_t send_ups_info(ups_data_t *ups_data)
+static esp_err_t send_ups_info(ups_data_t *ups_data)
 {
     cJSON *root = NULL;
     char * string;
