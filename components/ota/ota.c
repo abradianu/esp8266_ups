@@ -17,8 +17,7 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 
-#define OTA_WRITE_BUFFSIZE     1500
-#define RECV_BUFFSIZE          1500
+#define OTA_BUFFSIZE  4096
 
 typedef enum esp_ota_firm_state {
     ESP_OTA_INIT = 0,
@@ -275,6 +274,17 @@ esp_err_t ota_start(char * ota_server_ip, int ota_server_port, char * ota_filena
         return ESP_FAIL;
     }
 
+    /* Set timeout */
+    struct timeval receiving_timeout;
+    receiving_timeout.tv_sec = 120;
+    receiving_timeout.tv_usec = 0;
+    if (setsockopt(socket_id, SOL_SOCKET, SO_RCVTIMEO, &receiving_timeout,
+                   sizeof(receiving_timeout)) < 0) {
+        ESP_LOGE(TAG, "Failed to set socket receiving timeout");
+        close(socket_id);
+        return ESP_FAIL;
+        }
+
     /*send GET request to http server*/
     const char *GET_FORMAT =
         "GET %s HTTP/1.0\r\n"
@@ -316,13 +326,13 @@ esp_err_t ota_start(char * ota_server_ip, int ota_server_port, char * ota_filena
     esp_ota_firm_init(&ota_firm, update_partition);
 
     /*Allocate OTA data write buffer to write to the flash*/
-    ota_write_data = malloc(OTA_WRITE_BUFFSIZE + 1);
+    ota_write_data = malloc(OTA_BUFFSIZE + 1);
     if (ota_write_data == NULL) {
         return ESP_FAIL;
     }
 
     /* Allocate packet receive buffer*/
-    recv_buf = malloc(RECV_BUFFSIZE + 1);
+    recv_buf = malloc(OTA_BUFFSIZE + 1);
     if (recv_buf == NULL) {
         free(ota_write_data);
         return ESP_FAIL;
@@ -330,9 +340,9 @@ esp_err_t ota_start(char * ota_server_ip, int ota_server_port, char * ota_filena
     
     /*deal with all receive packet*/
     while (flag) {
-        memset(recv_buf, 0, RECV_BUFFSIZE);
-        memset(ota_write_data, 0, OTA_WRITE_BUFFSIZE);
-        int buff_len = recv(socket_id, recv_buf, RECV_BUFFSIZE, 0);
+        memset(recv_buf, 0, OTA_BUFFSIZE);
+        memset(ota_write_data, 0, OTA_BUFFSIZE);
+        int buff_len = recv(socket_id, recv_buf, OTA_BUFFSIZE, 0);
         if (buff_len < 0) { /*receive error*/
             ESP_LOGE(TAG, "Error: receive data error! errno=%d", errno);
             free(ota_write_data);
