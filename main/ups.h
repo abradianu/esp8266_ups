@@ -30,7 +30,7 @@ extern "C"
 {
 #endif
 
-#define FW_VERSION                "0.1.2"
+#define FW_VERSION                "0.2.0"
 
 typedef struct {
     int v_out;
