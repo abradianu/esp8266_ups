@@ -35,7 +35,7 @@
 #include "esp_system.h"
 
 #include "ota.h"
-#include "mqtt_client.h"
+#include "mqtt_lwip_client.h"
 #include "cJSON.h"
 #include "nvs_utils.h"
  #include "ups.h"
@@ -80,7 +80,6 @@
 #define CMD_JSON_FILENAME        "file"
 #define CMD_JSON_AP_MODE         "ap"
 #define CMD_JSON_BRIGHTNESS      "b"
-#define CMD_JSON_CCS811_BASELINE "baseline"
 
 
 /* Delay between MQTT publish attempts */
@@ -594,7 +593,6 @@ esp_err_t send_sys_info()
     char * string;
     uint32_t uptime;
     esp_err_t ret;
-    uint16_t baseline = 0;
 
     /* uptime in seconds. 100Hz tick rate => 497 days */
     uptime = xTaskGetTickCount() / xPortGetTickRateHz();
@@ -605,12 +603,9 @@ esp_err_t send_sys_info()
         return ESP_FAIL;
     }
 
-    nvs_get_u16(nvs_get_handle(), NVS_CCS811_BASELINE, &baseline);
-
     if (!cJSON_AddNumberToObject(root, CMD_JSON_CMD, CMD_GET_SYS_INFO)          ||
         !cJSON_AddStringToObject(root, CMD_JSON_CLIENT_ID, mqtt_client_id)      ||
         !cJSON_AddStringToObject(root, CMD_JSON_CHIP_MAC, nvs_get_base_mac())   ||
-        !cJSON_AddNumberToObject(root, CMD_JSON_CCS811_BASELINE, baseline)      ||
         !cJSON_AddNumberToObject(root, CMD_JSON_TIME, time(NULL))               ||
         !cJSON_AddStringToObject(root, CMD_JSON_FW_VER, FW_VERSION)             ||
         !cJSON_AddNumberToObject(root, CMD_JSON_HEAP, esp_get_free_heap_size()) ||

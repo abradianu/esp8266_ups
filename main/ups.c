@@ -126,10 +126,10 @@ typedef enum {
     WIFI_AP_MODE,
     WIFI_STA_DISCONNECTED,
     WIFI_STA_CONNECTED,
-} wifi_state_t;
+} wifi_mode_state_t;
 
 static const char *TAG = "UPS";
-static wifi_state_t wifi_state;
+static wifi_mode_state_t wifi_state;
 static i2c_dev_t adc_dev;
 static ups_data_t ups_data;
 static SemaphoreHandle_t ups_mutex = NULL;

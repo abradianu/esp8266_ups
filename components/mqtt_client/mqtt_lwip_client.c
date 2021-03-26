@@ -32,7 +32,7 @@
 #include "freertos/semphr.h"
 #include "esp_log.h"
 
-#include "mqtt_client.h"
+#include "mqtt_lwip_client.h"
 
 #define MQTT_CLIENT_TASK_NAME       "mqtt_client"
 #define MQTT_CLIENT_TASK_PRIO       2
@@ -51,12 +51,12 @@ typedef enum {
     MQTT_ERROR_CONNECT,
     MQTT_ERROR_SUBSCRIBE,
     MQTT_ERROR_PUBLISH,
-}error_t;
+}mqtt_error_t;
 
 typedef struct {
     mqtt_client_info_t * client_info;
     mqtt_client_t *      mqtt_client;
-    error_t              error;
+    mqtt_error_t         error;
     SemaphoreHandle_t    sem;
 } mqtt_client_ctrl_t;
 
@@ -88,7 +88,7 @@ esp_err_t mqtt_client_publish(void * ctrl_handle, const char *topic,
     err_t err;
 
     ESP_LOGI(TAG, "Publish on topic %s, len %d, qos %d, retain %d", topic, len, qos, retain);
-    
+
     if (mqtt_client_ctrl == NULL ||
         (mqtt_client = mqtt_client_ctrl->mqtt_client) == NULL) {
         ESP_LOGE(TAG, "NULL ctrl_handle or mqtt_client!");
@@ -183,11 +183,11 @@ static void mqtt_client_task(void *arg)
     uint32_t delay = MQTT_CLIENT_DELAY_MIN;
     err_t err;
     BaseType_t res;
-  
+    
     mqtt_client_ctrl = arg;
     mqtt_client = mqtt_client_ctrl->mqtt_client;
     client_info = mqtt_client_ctrl->client_info;
-
+    
     while (1) {
         /* Disconnect first in case it was connected before */
         mqtt_disconnect(mqtt_client);
