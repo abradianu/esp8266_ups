@@ -42,7 +42,7 @@
 #include "lwip/apps/sntp.h"
 #include "cmd_recv.h"
 #include "nvs_utils.h"
-#include "http_server2.h"
+#include "http_server_ap.h"
 #include "ssd1306.h"
 #include "ads111x.h"
 #include "ssd1306_fonts.h"
